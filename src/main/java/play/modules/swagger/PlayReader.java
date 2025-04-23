@@ -212,7 +212,14 @@ public class PlayReader {
         while (iter.hasNext()) {
             PathPart part = (PathPart) iter.next();
             if (part instanceof StaticPart) {
-                sb.append(((StaticPart) part).value());
+                String path = ((StaticPart) part).value();
+                if (path.contains("/customer/")) {
+                    path = path.replace("/customer/", "/");
+                } else
+                    if (path.contains("/supplier/")) {
+                        path = path.replace("/supplier/", "/");
+                    }
+                sb.append(path);
             } else if (part instanceof DynamicPart) {
                 sb.append("{");
                 sb.append(((DynamicPart) part).name());
@@ -225,6 +232,13 @@ public class PlayReader {
                 }
             }
         }
+
+        if (sb.toString().contains("//")) {
+            String str = sb.toString().replace("//", "/");
+            sb.setLength(0);
+            sb.append(str);
+        }
+
         StringBuilder basePathFilter = new StringBuilder(basePath);
         if (basePath.startsWith("/"))
             basePathFilter.deleteCharAt(0);
@@ -409,7 +423,7 @@ public class PlayReader {
         } else if (param.paramType().equalsIgnoreCase("form") || param.paramType().equalsIgnoreCase("formData")) {
             p = new FormParameter();
         } else if (param.paramType().equalsIgnoreCase("body")) {
-            p = null;
+            p = new BodyParameter();
         } else if (param.paramType().equalsIgnoreCase("header")) {
             p = new HeaderParameter();
         } else {
